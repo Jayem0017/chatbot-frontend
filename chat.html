@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>AI Chatbot</title>
+
+<style>
+body {
+  margin: 0;
+  background: #f5f5f5;
+  font-family: Arial, sans-serif;
+}
+
+.chat-container {
+  max-width: 500px;
+  margin: auto;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  border-left: 1px solid #ddd;
+  border-right: 1px solid #ddd;
+  background: white;
+}
+
+.header {
+  padding: 15px;
+  background: #4a68ff;
+  color: white;
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.chat-box {
+  flex: 1;
+  padding: 15px;
+  overflow-y: auto;
+}
+
+.message {
+  padding: 10px 14px;
+  margin: 10px 0;
+  border-radius: 10px;
+  max-width: 80%;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.user {
+  background: #4a68ff;
+  color: white;
+  margin-left: auto;
+}
+
+.bot {
+  background: #ececec;
+}
+
+.input-area {
+  display: flex;
+  border-top: 1px solid #ddd;
+}
+
+input {
+  flex: 1;
+  padding: 15px;
+  border: none;
+  outline: none;
+  font-size: 16px;
+}
+
+button {
+  background: #4a68ff;
+  color: white;
+  padding: 0 20px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+}
+
+.typing {
+  color: #888;
+  font-style: italic;
+  font-size: 14px;
+  padding: 10px;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="chat-container">
+  <div class="header">AI Assistant</div>
+
+  <div id="chat" class="chat-box"></div>
+
+  <div class="input-area">
+    <input id="userInput" type="text" placeholder="Type a message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
+
+<script>
+const WEBHOOK_URL = "https://vct-iandavid.onrender.com/webhook/0fe4c4e0-ced2-4046-89f6-a4cf9155fcf7";
+
+function addMessage(text, sender) {
+  const chat = document.getElementById("chat");
+  const msg = document.createElement("div");
+  msg.classList.add("message", sender);
+  msg.textContent = text;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function addTypingIndicator() {
+  const chat = document.getElementById("chat");
+  const typing = document.createElement("div");
+  typing.id = "typing";
+  typing.classList.add("typing");
+  typing.textContent = "Assistant is typing...";
+  chat.appendChild(typing);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTypingIndicator() {
+  const t = document.getElementById("typing");
+  if (t) t.remove();
+}
+
+async function sendMessage() {
+  const input = document.getElementById("userInput");
+  const text = input.value.trim();
+  if (!text) return;
+
+  addMessage(text, "user");
+  input.value = "";
+
+  addTypingIndicator();
+
+  try {
+    const response = await fetch(WEBHOOK_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question: text })
+    });
+
+    const data = await response.json();
+
+    removeTypingIndicator();
+    addMessage(data.response || "No response", "bot");
+
+  } catch (error) {
+    removeTypingIndicator();
+    addMessage("Error connecting to server.", "bot");
+  }
+}
+</script>
+
+</body>
+</html>
